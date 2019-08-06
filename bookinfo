@@ -1,0 +1,29 @@
+#!/bin/sh
+
+echo "Iniciando a aplicaçao bookinfo"
+#microk8s.enable istio #habilitando o istio (aplicaçao que contem o monitoramento)
+microk8s.kubectl label namespace default istio-injection=enabled #definindo o namespace default para a aplicaçao
+microk8s.kubectl create -f bookinfo.yaml #cria os serviços e os pods da aplicaçao bookinfo
+microk8s.kubectl create -f bookinfo-gateway.yaml #cria os serviços de gateway para que o cluster interno consiga ser visto externamente
+
+#setando o nosso gateway de acesso da aplicaçao
+export INGRESS_PORT=$(microk8s.kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+export SECURE_INGRESS_PORT=$(microk8s.kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+export INGRESS_HOST=$(microk8s.kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+echo ""
+echo "Acesso da aplicaçao bookinfo ('IP'/productpage)"
+printenv GATEWAY_URL  #mostra o link para acesso da aplicaçao
+echo "Concluido!"
+
+echo ""
+echo "Inciando configuracao do monitoramento (grafana)"
+microk8s.kubectl -n istio-system get svc grafana
+echo "Concluido!"
+echo ""
+
+echo "Iniciando configuracao do monitoramento de log"
+microk8s.kubectl create -f logging-stack.yaml 
+microk8s.kubectl create -f fluentd-istio.yaml
+microk8s.kubectl -n logging get svc kibana
+echo "Concluido!"

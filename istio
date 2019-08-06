@@ -1,0 +1,3 @@
+#!/bin/sh
+
+microk8s.enable istio
