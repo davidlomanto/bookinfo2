@@ -1,0 +1,3 @@
+#!/bin/sh
+microk8s.kubectl delete -f destination-rule-all-mtls.yaml
+microk8s.kubectl delete -f virtual-service-reviews.yaml

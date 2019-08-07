@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "Escopo 2: Uso de service mash/api-gateway para processar headers das solicitações para reviews"
+microk8s.kubectl create -f destination-rule-all-mtls.yaml
+microk8s.kubectl create -f virtual-service-reviews.yaml
+echo ""
+echo "Concluido!"
